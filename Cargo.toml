@@ -1,0 +1,32 @@
+[package]
+name = "shrowd-secret"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "SHROWD Secret - Fast cryptographic primitives for attic repo integrity and code signing"
+repository.workspace = true
+
+[lib]
+name = "shrowd_secret"
+crate-type = ["rlib"]
+
+[features]
+default = ["std", "pb"]
+std = []
+pb = []
+async = []
+
+[dependencies]
+# Fast cryptographic primitives for attic repo integrity
+blake3 = "1.5"
+chacha20 = "0.9"
+hex = "0.4"
+
+# Optional serde for API communication
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+
+[dev-dependencies]
+hex = "0.4"
+
