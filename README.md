@@ -6,6 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-44%2F44_passing-brightgreen.svg)](#testing)
 [![Security](https://img.shields.io/badge/security-hardcoded_data_free-green.svg)](#security)
+[![Nightly](https://img.shields.io/badge/nightly-available-purple.svg)](https://github.com/RealVonmakeheat/shrowd-secret/tree/nightly)
 
 ## 🌟 Overview
 
@@ -37,6 +38,11 @@ Add to your `Cargo.toml`:
 [dependencies]
 shrowd-secret = "0.1.0"
 ```
+
+### Branches
+
+- **`master`**: Stable, production-ready branch (recommended for most users)
+- **`nightly`**: Experimental development branch for performance enthusiasts ([see NIGHTLY.md](NIGHTLY.md))
 
 ### Basic Usage
 
