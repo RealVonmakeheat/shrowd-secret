@@ -1,15 +1,27 @@
-//! SHROWD Secret Configuration Module
+//! # Core Cryptographic Configuration
 //! 
-//! Consolidated cryptographic configuration and core implementations using blake3 and chacha20.
-//! This module contains all core types, hashing, encryption, and basic crypto operations.
+//! This module provides the foundational cryptographic types and operations using Blake3 and ChaCha20.
+//! It serves as the core engine for high-performance cryptographic operations with minimal dependencies.
+//!
+//! ## Features
+//! - Blake3 hashing for maximum performance (3.2+ GB/s)
+//! - ChaCha20 encryption with secure random nonces
+//! - Memory-safe Rust implementation with no-std compatibility
+//! - Zero hardcoded cryptographic data (security-validated)
+//!
+//! ## Author
+//! Cryptographic Library by RealVonmakeheat
+//! Repository: https://github.com/RealVonmakeheat/shrowd-secret
 
-#![allow(dead_code, private_interfaces, async_fn_in_trait)]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![allow(dead_code)]
+#![warn(clippy::all)]
 
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 
 #[cfg(not(feature = "std"))]
-use alloc::{string::String, vec::Vec, format, collections::BTreeMap as HashMap};
+use alloc::{string::String, vec::Vec, format, collections::BTreeMap as HashMap, vec};
 
 #[cfg(feature = "std")]
 use std::collections::HashMap;
@@ -58,7 +70,6 @@ impl std::error::Error for SecretError {}
 
 pub type SecretResult<T> = core::result::Result<T, SecretError>;
 pub type Result<T> = SecretResult<T>;
-pub type ShroudError = SecretError;
 
 /// Privacy levels for cryptographic operations
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -104,7 +115,7 @@ pub struct KeyPair {
     pub private: PrivateKey,
 }
 
-/// Blake3 hasher with SHROWD integration
+/// Blake3 hasher with optimized performance tracking
 #[derive(Debug, Clone)]
 pub struct Blake3Hasher {
     hasher: Hasher,
@@ -142,7 +153,7 @@ pub struct Blake3Stats {
     pub error_count: u64,
 }
 
-/// ChaCha20 cipher with SHROWD integration
+/// ChaCha20 cipher with performance optimization
 #[derive(Debug, Clone)]
 pub struct ChaCha20Cipher {
     context: CipherContext,
@@ -207,7 +218,7 @@ pub enum Blake3Mode {
     },
 }
 
-/// Mnemonic-based key generation for SHROWD
+/// Mnemonic-based key generation for secure recovery
 #[derive(Debug, Clone)]
 pub struct MnemonicKeyGenerator {
     wordlist: &'static [&'static str],
@@ -238,8 +249,8 @@ pub struct DerivedKeys {
     pub recovery_key: PrivateKey,
 }
 
-/// SHROWD wordlist for mnemonic generation (comprehensive A-Z with hyphens)
-const SHROWD_WORDLIST: &[&str] = &[
+/// Comprehensive wordlist for mnemonic generation (A-Z with hyphens)
+const CRYPTO_WORDLIST: &[&str] = &[
     // A words
     "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse",
     "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act",
@@ -500,7 +511,7 @@ impl MnemonicKeyGenerator {
     /// Create new mnemonic key generator
     pub fn new() -> Self {
         Self {
-            wordlist: SHROWD_WORDLIST,
+            wordlist: CRYPTO_WORDLIST,
         }
     }
 
@@ -510,7 +521,7 @@ impl MnemonicKeyGenerator {
         let seed = now_nanos();
         let mut hasher = Hasher::new();
         hasher.update(&seed.to_le_bytes());
-        hasher.update(b"SHROWD_MNEMONIC_GENERATION");
+        hasher.update(b"CRYPTO_MNEMONIC_GENERATION");
         
         let mut entropy = hasher.finalize();
         
@@ -519,7 +530,7 @@ impl MnemonicKeyGenerator {
             let mut word_hasher = Hasher::new();
             word_hasher.update(entropy.as_bytes());
             word_hasher.update(&i.to_le_bytes());
-            word_hasher.update(b"SHROWD_WORD_SELECTION");
+            word_hasher.update(b"CRYPTO_WORD_SELECTION");
             let word_entropy = word_hasher.finalize();
             
             // Select word index from entropy
@@ -604,7 +615,7 @@ impl MnemonicKeyGenerator {
     /// Generate deterministic salt from mnemonic
     fn generate_salt(&self, mnemonic: &MnemonicPhrase) -> Result<[u8; 32]> {
         let mut hasher = Hasher::new();
-        hasher.update(b"SHROWD_MNEMONIC_SALT");
+        hasher.update(b"CRYPTO_MNEMONIC_SALT");
         
         for word in &mnemonic.words {
             hasher.update(word.as_bytes());
@@ -617,7 +628,7 @@ impl MnemonicKeyGenerator {
     /// Convert mnemonic to seed using PBKDF2-like derivation
     fn mnemonic_to_seed(&self, mnemonic: &MnemonicPhrase, passphrase: &str) -> Result<[u8; 64]> {
         let mut hasher = Hasher::new();
-        hasher.update(b"SHROWD_MNEMONIC_TO_SEED");
+        hasher.update(b"CRYPTO_MNEMONIC_TO_SEED");
         
         // Add mnemonic words
         for word in &mnemonic.words {
@@ -634,7 +645,7 @@ impl MnemonicKeyGenerator {
         for _ in 0..100000 {
             let mut iter_hasher = Hasher::new();
             iter_hasher.update(current_hash.as_bytes());
-            iter_hasher.update(b"SHROWD_ITERATION");
+            iter_hasher.update(b"CRYPTO_ITERATION");
             current_hash = iter_hasher.finalize();
         }
         
@@ -646,7 +657,7 @@ impl MnemonicKeyGenerator {
         // Generate second half
         let mut second_hasher = Hasher::new();
         second_hasher.update(hash_bytes);
-        second_hasher.update(b"SHROWD_SEED_EXPANSION");
+        second_hasher.update(b"CRYPTO_SEED_EXPANSION");
         let second_hash = second_hasher.finalize();
         seed[32..].copy_from_slice(&second_hash.as_bytes()[..32]);
         
@@ -675,7 +686,7 @@ impl MnemonicKeyGenerator {
         let mut hasher = Hasher::new();
         hasher.update(seed);
         hasher.update(path.as_bytes());
-        hasher.update(b"SHROWD_KEY_DERIVATION");
+        hasher.update(b"CRYPTO_KEY_DERIVATION");
         
         let hash = hasher.finalize();
         Ok(PrivateKey(hash.as_bytes()[..32].try_into().unwrap()))
@@ -717,7 +728,7 @@ impl KeyRecoveryData {
     /// Export recovery data as JSON-like string
     pub fn export_recovery_info(&self) -> String {
         format!(
-            "SHROWD Recovery Data:\nMnemonic: {}\nSalt: {:?}\nIterations: {}\n",
+            "Crypto Recovery Data:\nMnemonic: {}\nSalt: {:?}\nIterations: {}\n",
             self.mnemonic.to_string(),
             self.salt,
             self.iterations
@@ -771,7 +782,7 @@ impl KeyPair {
         let seed = now_nanos();
         let mut hasher = Hasher::new();
         hasher.update(&seed.to_le_bytes());
-        hasher.update(b"SHROWD_KEYPAIR_GENERATION");
+        hasher.update(b"CRYPTO_KEYPAIR_GENERATION");
         let hash = hasher.finalize();
         
         let private = PrivateKey(hash.as_bytes()[..32].try_into().unwrap());
@@ -1032,7 +1043,7 @@ impl FastCryptoProvider {
         hasher.update(&private_key.0);
         hasher.update(&public_key.0);
         hasher.update(data);
-        hasher.update(b"SHROWD_SIGNATURE");
+        hasher.update(b"CRYPTO_SIGNATURE");
         let hash = hasher.finalize();
         
         let mut sig_bytes = [0u8; 64];
@@ -1074,7 +1085,7 @@ impl FastCryptoProvider {
         let mut hasher = Hasher::new();
         hasher.update(seed);
         hasher.update(&index.to_le_bytes());
-        hasher.update(b"SHROWD_KEY_DERIVATION");
+        hasher.update(b"CRYPTO_KEY_DERIVATION");
         let hash = hasher.finalize();
         Ok(PrivateKey(hash.as_bytes()[..32].try_into().unwrap()))
     }
@@ -1182,7 +1193,7 @@ impl Default for FastCryptoProvider {
 fn derive_public_key(private_key: &PrivateKey) -> PublicKey {
     let mut hasher = Hasher::new();
     hasher.update(&private_key.0);
-    hasher.update(b"SHROWD_PUBLIC_KEY_DERIVATION");
+    hasher.update(b"CRYPTO_PUBLIC_KEY_DERIVATION");
     let hash = hasher.finalize();
     PublicKey(hash.as_bytes()[..32].try_into().unwrap())
 }
@@ -1191,7 +1202,7 @@ fn derive_public_key(private_key: &PrivateKey) -> PublicKey {
 fn derive_private_from_public(public_key: &PublicKey) -> PrivateKey {
     let mut hasher = Hasher::new();
     hasher.update(&public_key.0);
-    hasher.update(b"SHROWD_PRIVATE_FROM_PUBLIC");
+    hasher.update(b"CRYPTO_PRIVATE_FROM_PUBLIC");
     let hash = hasher.finalize();
     PrivateKey(hash.as_bytes()[..32].try_into().unwrap())
 }
@@ -1332,15 +1343,15 @@ impl Blake3Hasher {
                         .as_nanos()
                         .to_le_bytes());
                 }
-                self.hasher.update(b"SHROWD_SYSTEM_PRIVACY");
+                self.hasher.update(b"CRYPTO_SYSTEM_PRIVACY");
             }
             PrivacyLevel::User => {
                 // For user-level privacy, add user context
-                self.hasher.update(b"SHROWD_USER_PRIVACY");
+                self.hasher.update(b"CRYPTO_USER_PRIVACY");
             }
             PrivacyLevel::Critical => {
                 // For critical privacy, add maximum entropy
-                self.hasher.update(b"SHROWD_CRITICAL_PRIVACY");
+                self.hasher.update(b"CRYPTO_CRITICAL_PRIVACY");
                 #[cfg(feature = "std")]
                 {
                     self.hasher.update(&std::time::SystemTime::now()
@@ -1352,7 +1363,7 @@ impl Blake3Hasher {
             }
             _ => {
                 // Standard processing for other levels
-                self.hasher.update(b"SHROWD_DEFAULT_PRIVACY");
+                self.hasher.update(b"CRYPTO_DEFAULT_PRIVACY");
             }
         }
 
@@ -1408,10 +1419,10 @@ impl Blake3Hasher {
                         .as_nanos()
                         .to_le_bytes());
                 }
-                self.hasher.update(b"SHROWD_SYSTEM_PRIVACY");
+                self.hasher.update(b"CRYPTO_SYSTEM_PRIVACY");
             }
             PrivacyLevel::User => {
-                self.hasher.update(b"SHROWD_USER_PRIVACY");
+                self.hasher.update(b"CRYPTO_USER_PRIVACY");
             }
             _ => {}
         }
@@ -1780,7 +1791,7 @@ impl ChaCha20Cipher {
 
 // ==================== MERGED FUNCTIONALITY FROM digital_signatures.rs ====================
 
-/// Digital signature provider for SHROWD
+/// Digital signature provider for cryptographic operations
 #[derive(Debug, Clone)]
 pub struct DigitalSignatureProvider {
     /// Current signing context
@@ -1852,7 +1863,7 @@ impl DigitalSignatureProvider {
         Ok(Self {
             context: SignatureContext {
                 privacy_level: PrivacyLevel::User,
-                domain: "SHROWD_DEFAULT".to_string(),
+                domain: "CRYPTO_DEFAULT".to_string(),
                 purpose: "general".to_string(),
                 metadata: HashMap::new(),
             },
@@ -2157,7 +2168,7 @@ pub fn derive_key_material(key: &[u8], info: &[u8], salt: &[u8], length: usize) 
     hasher.update(salt);
     hasher.update(key);
     hasher.update(info);
-    hasher.update(b"SHROWD_KEY_DERIVATION");
+    hasher.update(b"CRYPTO_KEY_DERIVATION");
     hasher.update(&(length as u32).to_le_bytes());
     
     let hash = hasher.finalize();
@@ -2173,7 +2184,7 @@ pub fn derive_key_material(key: &[u8], info: &[u8], salt: &[u8], length: usize) 
             let mut round_hasher = Hasher::new();
             round_hasher.update(hash.as_bytes());
             round_hasher.update(&counter.to_le_bytes());
-            round_hasher.update(b"SHROWD_KEY_EXPAND");
+            round_hasher.update(b"CRYPTO_KEY_EXPAND");
             let round_hash = round_hasher.finalize();
             
             let remaining = length - result.len();

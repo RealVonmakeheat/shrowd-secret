@@ -1,4 +1,4 @@
-//! SHROWD Secret Secure Network Module
+//! Secure Network Module
 //! 
 //! High-performance secure networking and communication protocols
 //! for encrypted data transmission and attic repository synchronization.
@@ -517,18 +517,18 @@ impl SecureNetwork {
         self.vulnerability_scanner.get_findings()
     }
 
-    /// Run comprehensive security scan
+    /// Run comprehensive security scan on current directory
     pub fn run_security_scan(&mut self) -> SecretResult<SecurityAuditReport> {
         let current_dir = std::env::current_dir()
             .map_err(|_| SecretError::InvalidInput)?;
         
-        let shrowd_core_path = current_dir.join("shrowd-core").join("src");
+        let src_path = current_dir.join("src");
         
-        if !shrowd_core_path.exists() {
+        if !src_path.exists() {
             return Err(SecretError::InvalidInput);
         }
         
-        self.scan_codebase(shrowd_core_path)
+        self.scan_codebase(src_path)
     }
 
     /// Get comprehensive network security statistics

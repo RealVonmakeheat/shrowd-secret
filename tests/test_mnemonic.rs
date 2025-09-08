@@ -100,7 +100,7 @@ mod tests {
         let recovery_data = generator.generate_keys_from_mnemonic(&mnemonic, None).unwrap();
         
         let export = recovery_data.export_recovery_info();
-        assert!(export.contains("SHROWD Recovery Data"));
+        assert!(export.contains("Crypto Recovery Data"));
         assert!(export.contains(&mnemonic.to_string()));
     }
 

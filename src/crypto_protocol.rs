@@ -1,7 +1,7 @@
-//! SHROWD Secret Crypto Protocol Module
+//! Cryptographic Protocol Module
 //! 
 //! High-performance cryptographic protocol implementations for secure communication
-//! and attic repository integrity verification using blake3 and chacha20.
+//! and repository integrity verification using blake3 and chacha20.
 
 #![allow(dead_code, private_interfaces, async_fn_in_trait)]
 
@@ -192,7 +192,7 @@ impl CryptoProtocol {
         hasher.update(&initiator_private.0);
         hasher.update(&responder_public.0);
         hasher.update(session_id.as_bytes());
-        hasher.update(b"SHROWD_HANDSHAKE");
+        hasher.update(b"CRYPTO_HANDSHAKE");
         let shared_secret_hash = hasher.finalize();
         let shared_secret = Hash(shared_secret_hash.as_bytes()[..32].try_into().unwrap());
         
@@ -201,7 +201,7 @@ impl CryptoProtocol {
             initiator_key: initiator_public,
             responder_key: responder_public.clone(),
             shared_secret,
-            protocol_version: "SHROWD-SECRET-1.0".to_string(),
+            protocol_version: "CRYPTO-SECRET-1.0".to_string(),
         })
     }
     
@@ -212,7 +212,7 @@ impl CryptoProtocol {
         hasher.update(&handshake.initiator_key.0);
         hasher.update(&handshake.responder_key.0);
         hasher.update(handshake.session_id.as_bytes());
-        hasher.update(b"SHROWD_HANDSHAKE");
+        hasher.update(b"CRYPTO_HANDSHAKE");
         let expected_hash = hasher.finalize();
         let expected_secret = Hash(expected_hash.as_bytes()[..32].try_into().unwrap());
         

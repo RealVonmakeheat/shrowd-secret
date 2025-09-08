@@ -6,7 +6,7 @@
 //! - Security management (from smod.rs)
 //! - Security extensions (from semod.rs)
 //!
-//! This module provides comprehensive security features for the SHROWD attic system,
+//! This module provides comprehensive security features for cryptographic systems,
 //! including encryption, digital signatures, privacy features, and security management.
 
 #[cfg(not(feature = "std"))]

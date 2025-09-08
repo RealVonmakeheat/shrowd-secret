@@ -1,4 +1,4 @@
-//! SHROWD Secret Key Ledger Module
+//! Cryptographic Key Ledger Module
 //! 
 //! Fast key management and ledger operations for tracking cryptographic keys
 //! and maintaining integrity of the attic repository.
@@ -38,7 +38,7 @@ fn generate_signature_from_context(context: &[u8]) -> Signature {
 
 // ==================== RE-EXPORTED TYPES FROM MERGED MODULES ====================
 
-/// Key types supported by SHROWD (from key_management.rs)
+/// Key types supported by cryptographic library
 #[derive(Debug, Clone, PartialEq)]
 pub enum KeyTypeMgmt {
     /// ChaCha20Poly1305 symmetric encryption key (32 bytes)
@@ -121,7 +121,7 @@ pub struct KeyDerivationInfo {
     pub parameters: HashMap<String, String>,
 }
 
-/// Key manager for SHROWD cryptographic operations
+/// Key manager for cryptographic operations
 #[derive(Debug, Clone)]
 pub struct KeyManager {
     /// Stored keys by ID
@@ -226,7 +226,7 @@ impl KeyManager {
             stats: KeyDerivationStats::default(),
             context: KeyDerivationContext {
                 privacy_level: PrivacyLevel::User,
-                application_context: "SHROWD_DEFAULT".to_string(),
+                application_context: "CRYPTO_DEFAULT".to_string(),
                 purpose: "general".to_string(),
                 parameters: HashMap::new(),
                 salt: None,
